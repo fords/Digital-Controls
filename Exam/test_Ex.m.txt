@@ -1,0 +1,189 @@
+clc
+clear all
+close all
+format compact
+
+% Digital Controls Exam
+% Start Date: 5/8/16
+% Due Date: 5/13/16
+% 1 Problem
+
+%% Part A
+
+num = [20 400];
+den = [1 106 605 500 0];
+T = .1;
+
+[r,p,k] = residue(num,den)
+
+num1 = [20 400];
+den1 = [1 106 605 500];
+
+Gp = tf(num1,den1)
+Gz = c2d(Gp,.1,'zoh')
+
+figure(1)
+step(Gz)
+grid on
+
+% Part B
+ 
+figure(2)
+rlocus(Gz)
+grid on
+
+% Part C
+
+% Sub i Sub 1
+
+k = .977;
+CL = feedback(k*Gz,1);
+figure(3)
+step(CL)
+grid on
+
+% Verification
+
+CLTF = (k*Gz)/(1+k*Gz);
+figure(4)
+step(CLTF)
+grid on
+
+% Sub i Sub 2
+
+M_R = k/(1+k*Gz);
+figure(5)
+step(M_R)
+grid on
+
+% Sub ii Sub 1
+
+ki = 25;
+CL = feedback(ki*Gz,1);
+figure(6)
+step(CL)
+grid on
+
+% Sub ii Sub 2
+
+M_Ri = ki/(1+(ki*Gz));
+figure(7)
+step(M_Ri)
+grid on
+
+% Part D
+
+Dz = 1;
+oltf = (Dz*Gz)
+figure(8)
+bode(oltf)
+grid on
+hold on
+margin(oltf)
+
+w = 22.7;
+w_w = (2/T)*tan(w*(T/2)) 
+
+fb = bandwidth(oltf)
+
+% Part E
+
+zeta = .8;
+Pm = zeta*100;
+
+figure(9)
+bode(Gz)
+hold on
+margin(Gz)
+grid on
+
+a0 = 25;
+ww0 = .243;
+
+wwp = ww0/(a0*.2754)
+
+kp = a0*(wwp*(ww0+2/T)/(ww0*(wwp+2/T)))
+z0 = ((2/T)-ww0)/((2/T)+ww0)
+zp = ((2/T)-wwp)/((2/T)+wwp)
+
+Dz = tf([kp -kp*z0],[1 -zp],.1)
+
+figure(10)
+bode(Dz*Gz)
+hold on
+margin(Dz*Gz)
+grid on
+
+figure(11)
+sys0 = feedback(Dz*Gz,1);
+step(sys0)
+grid on
+fm = bandwidth(sys0)
+
+figure(12)
+sys1 = Dz/(1+Dz*Gz);
+step(sys1)
+grid on
+
+% Part F 
+
+zeta = .55;
+Pm = zeta*100;
+
+K = (1/.01 - 1)/.7905; 
+
+
+a0 = 125;
+ww0 = .1*4.78;
+
+x = db2mag(-18.3);
+
+wwp = ww0/(a0*x)
+
+kp = a0*(wwp*(ww0+2/T)/(ww0*(wwp+2/T)))
+z0 = ((2/T)-ww0)/((2/T)+ww0)
+zp = ((2/T)-wwp)/((2/T)+wwp)
+
+Dz = tf([kp -kp*z0],[1 -zp],.1)
+
+figure(13)
+bode(Dz*Gz)
+hold on
+margin(Dz*Gz)
+grid on
+
+figure(14)
+sys2 = feedback(Dz*Gz,1);
+step(sys2)
+grid on
+fm0 = bandwidth(sys2)
+
+figure(15)
+sys3 = Dz/(1+Dz*Gz);
+step(sys3)
+grid on
+
+% Part G
+
+figure(16)
+step(CLTF);
+hold on
+step(CL);
+hold on
+step(sys0);
+hold on
+step(sys2);
+grid on
+legend('\zeta = 1','< 5% SS Error','\zeta = .8','Fastest Response','Location','Best')
+
+figure(17)
+step(M_R)
+hold on
+step(M_Ri)
+hold on
+step(sys1)
+hold on
+step(sys3)
+axis([0 5 -10 10])
+grid on
+legend('\zeta = 1','< 5% SS Error','\zeta = .8','Fastest Response','Location','Best')
